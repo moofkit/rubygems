@@ -145,10 +145,8 @@ class Gem::S3URISigner
     require_relative "request/connection_pools"
     require "json"
 
-    iam_info = ec2_metadata_request(EC2_IAM_INFO)
-    # Expected format: arn:aws:iam::<id>:instance-profile/<role_name>
-    role_name = iam_info["InstanceProfileArn"].split("/").last
-    ec2_metadata_request(EC2_IAM_SECURITY_CREDENTIALS + role_name)
+    role_name = ec2_metadata_request(EC2_IAM_SECURITY_CREDENTIALS).strip
+    JSON.parse(ec2_metadata_request(EC2_IAM_SECURITY_CREDENTIALS + role_name))
   end
 
   def ec2_metadata_request(url)
@@ -159,7 +157,7 @@ class Gem::S3URISigner
 
     case response
     when Gem::Net::HTTPOK then
-      JSON.parse(response.body)
+      response.body
     else
       raise InstanceProfileError.new("Unable to fetch AWS metadata from #{uri}: #{response.message} #{response.code}")
     end
@@ -172,6 +170,5 @@ class Gem::S3URISigner
   end
 
   BASE64_URI_TRANSLATE = { "+" => "%2B", "/" => "%2F", "=" => "%3D", "\n" => "" }.freeze
-  EC2_IAM_INFO = "http://169.254.169.254/latest/meta-data/iam/info"
   EC2_IAM_SECURITY_CREDENTIALS = "http://169.254.169.254/latest/meta-data/iam/security-credentials/"
 end
