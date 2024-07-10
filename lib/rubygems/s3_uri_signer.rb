@@ -120,6 +120,7 @@ class Gem::S3URISigner
       security_token = ENV["AWS_SESSION_TOKEN"]
     when "instance_profile"
       credentials = ec2_metadata_credentials_json
+      puts "credentials: #{credentials}"
       id = credentials["AccessKeyId"]
       secret = credentials["SecretAccessKey"]
       security_token = credentials["Token"]
@@ -146,6 +147,7 @@ class Gem::S3URISigner
     require "json"
 
     role_name = ec2_metadata_request(EC2_IAM_SECURITY_CREDENTIALS).strip
+    puts "role_name: #{role_name}"
     JSON.parse(ec2_metadata_request(EC2_IAM_SECURITY_CREDENTIALS + role_name))
   end
 
